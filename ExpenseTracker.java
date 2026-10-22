@@ -138,11 +138,18 @@ public class ExpenseTracker {
             }
         } catch (IOException e) { System.err.println("Could not load saved expenses: " + e.getMessage()); }
     }
-    private void saveExpenses() {
-        try {
-            Files.createDirectories(DATA_FILE.getParent());
-            List<String> lines = expenses.stream().map(Expense::toCsv).toList();
-            Files.write(DATA_FILE, lines);
-        } catch (IOException e) { System.err.println("Could not save expenses: " + e.getMessage()); }
+   private boolean saveExpenses() {
+    try {
+        Files.createDirectories(DATA_FILE.getParent());
+        List<String> lines = expenses.stream()
+                .map(Expense::toCsv)
+                .toList();
+        Files.write(DATA_FILE, lines);
+        return true;
+    } catch (IOException e) {
+        System.err.println("Could not save expenses: "
+                + e.getMessage());
+        return false;
     }
+}
 }
