@@ -57,8 +57,10 @@ public class ExpenseTracker {
         LocalDate date = readDate("Date (YYYY-MM-DD, blank for today): ", true);
         Expense expense = new Expense(nextId++, description, amount, category, date);
         expenses.add(expense);
-        saveExpenses();
-        System.out.println("Expense added successfully. ID: " + expense.getId());
+if (saveExpenses()) {System.out.println("Expense added successfully. ID: " + expense.getId());
+} else {expenses.remove(expense);
+    System.out.println("Expense could not be saved.");
+}
     }
 
     private void listExpenses() {
@@ -88,16 +90,27 @@ public class ExpenseTracker {
         String category = readOptional("Category [" + old.getCategory() + "]: ", old.getCategory());
         LocalDate date = readOptionalDate("Date [" + old.getDate() + "]: ", old.getDate());
         Expense updated = new Expense(old.getId(), description, amount, category, date);
-        expenses.set(expenses.indexOf(old), updated);
-        saveExpenses();
+        int index = expenses.indexOf(old);
+        expenses.set(index, updated);
+        if (saveExpenses()) {
         System.out.println("Expense updated.");
+        } else {
+        expenses.set(index, old);
+        System.out.println("Update could not be saved.");
+        }
     }
 
     private void deleteExpense() {
         Expense expense = findById(readInt("Expense ID to delete: ", 1, Integer.MAX_VALUE));
         if (expense == null) { System.out.println("No expense found with that ID."); return; }
         if (readText("Delete '" + expense.getDescription() + "' for " + money(expense.getAmount()) + "? (yes/no): ").equalsIgnoreCase("yes")) {
-            expenses.remove(expense); saveExpenses(); System.out.println("Expense deleted.");
+            expenses.remove(expense);
+        if (saveExpenses()) {
+        System.out.println("Expense deleted.");
+        } else {
+        expenses.add(expense);
+        System.out.println("Deletion could not be saved.");
+        }
         } else System.out.println("Deletion cancelled.");
     }
 
@@ -141,14 +154,10 @@ public class ExpenseTracker {
    private boolean saveExpenses() {
     try {
         Files.createDirectories(DATA_FILE.getParent());
-        List<String> lines = expenses.stream()
-                .map(Expense::toCsv)
-                .toList();
+        List<String> lines = expenses.stream().map(Expense::toCsv).toList();
         Files.write(DATA_FILE, lines);
         return true;
-    } catch (IOException e) {
-        System.err.println("Could not save expenses: "
-                + e.getMessage());
+    } catch (IOException e) {System.err.println("Could not save expenses: " + e.getMessage());
         return false;
     }
 }
