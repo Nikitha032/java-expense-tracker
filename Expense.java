@@ -14,13 +14,22 @@ public final class Expense {
     public Expense(int id, String description, BigDecimal amount, String category, LocalDate date) {
         if (id <= 0) throw new IllegalArgumentException("ID must be positive.");
         if (description == null || description.isBlank()) throw new IllegalArgumentException("Description cannot be empty.");
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("Amount must be greater than zero.");
+        if (amount == null ||amount.compareTo(BigDecimal.ZERO) <= 0) { throw new IllegalArgumentException("Amount must be greater than zero." );
+}
+
+if (amount.stripTrailingZeros().scale() > 2) {
+    throw new IllegalArgumentException(
+        "Amount cannot have more than 2 decimal places."
+    );
+}
         if (category == null || category.isBlank()) throw new IllegalArgumentException("Category cannot be empty.");
         this.id = id;
         this.description = description.trim();
         this.amount = amount.setScale(2, java.math.RoundingMode.HALF_UP);
         this.category = category.trim();
-        this.date = Objects.requireNonNull(date, "Date cannot be null.");
+        this.date = Objects.requireNonNull(date, "Date cannot be null.);
+if (this.date.isAfter(LocalDate.now())) {throw new IllegalArgumentException("Expense date cannot be in the future." );
+}
     }
 
     public int getId() { return id; }
